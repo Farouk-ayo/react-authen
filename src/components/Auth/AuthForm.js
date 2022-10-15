@@ -12,11 +12,11 @@ const AuthForm = () => {
   const authCtx = useContext(AuthContext);
 
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
   };
-  const [isLoading, setIsLoading] = useState(false);
 
   const submitHandler = (event) => {
     event.preventDefault();
@@ -52,16 +52,20 @@ const AuthForm = () => {
         } else {
           return res.json().then((data) => {
             let errorMssg = "Authentication failed";
-            if (data && data.error && data.error.message) {
-              errorMssg = data.error.message;
-            }
-            alert(errorMssg);
+            // if (data && data.error && data.error.message) {
+            //   errorMssg = data.error.message;
+            // }
+            // alert(errorMssg);
             throw new Error(errorMssg);
           });
         }
       })
       .then((data) => {
-        authCtx.login(data.idToken);
+        const expirationTime = new Date(
+          new Date().getTime() + +data.expiresIn * 1000
+        );
+
+        authCtx.login(data.idToken, expirationTime.toISOString());
         history.replace("/");
       })
       .catch((err) => {
